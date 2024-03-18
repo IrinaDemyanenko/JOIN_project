@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block main_info %}
+    <div class="container py-2">
+        <h3>{{ title }}</h3>
+    </div>
+    <!-- класс py-5 создает отступы сверху и снизу блока -->
+    <div class="container py-5">
+        {% for post in posts %}
+            <ul>
+                <li>
+                    <h4><b>{{ post.title }}</b></h4>
+                </li>
+                <li>
+                    <i>{{ post.anons }}</i>
+                </li>
+            </ul>
+            <p>{{ post.text }}</p>
+            <ul>
+                <li>
+                    Автор: {{ post.author.get_full_name }}
+                </li>
+                <li>
+                    Дата публикации: {{ post.pub_date|date:"d E Y" }}
+                </li>
+            </ul>
+            {% if post.group %}
+                <a href="{% url 'posts:group_list' post.group.slug %}">
+                    все записи группы
+                </a>
+            <!--posts это пространство имён, прописанное в join/urls.py
+            а group_posts это название view функции-->
+            <!--из модели post берём поле group, а из поля group берём slug-->
+            {% endif %}
+            {% if not forloop.last %}
+                <hr>  <!--горизонтальная линия horizontal rule-->
+            {% endif %}
+        {% endfor %} <!--двойные фигурные скобки, обращение к словарю из
+                        view функции -->
+    </div>
+{% endblock %}  
