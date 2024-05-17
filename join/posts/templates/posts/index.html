@@ -1,43 +1,112 @@
 {% extends "base.html" %}
+{% load uglify %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block main_info %}
-    <div class="container py-2">
-        <h3>{{ title }}</h3>
+  <div class="container py-2">
+    <h3>{{ title|uglify }}</h3>
+  </div>
+  <div class="container">
+    <h1>Поиск по записям</h1>
+      
+    <div class="card">
+      <div class="card-body">
+        <form class="form-inline" action="/">
+          <div class="form-row">
+            <input name="q" class="form-control form-control-lg" type="search" 
+            placeholder="Поиск" {% if keyword %} value="{{ keyword }}"{% endif %}>
+            <button class="btn" type="submit">Найти</button>
+          </div>
+        </form>
+      </div>
     </div>
+
+  <div class="container">
+    {% for post in posts %}
+    <strong>
+      Автор: {{ post.author.get_full_name }},
+      Дата публикации: {{ post.pub_date|date:"d M Y" }},
+      Группа: {{ post.group.title }}
+    </strong>
+    <h4>{{ post.title }}</h4>
+    <h5><i>{{ post.anons }}</i></h5>
+    <p>{{ post.text|linebreaks }}</p>
+    {% endfor %}
     <!-- класс py-5 создает отступы сверху и снизу блока -->
-    <div class="container py-5">
-        {% for post in posts %}
-            <ul>
-                <li>
-                    <h4><b>{{ post.title }}</b></h4>
-                </li>
-                <li>
-                    <i>{{ post.anons }}</i>
-                </li>
-            </ul>
-            <p>{{ post.text }}</p>
-            <ul>
-                <li>
-                    Автор: {{ post.author.get_full_name }}
-                </li>
-                <li>
-                    Дата публикации: {{ post.pub_date|date:"d E Y" }}
-                </li>
-            </ul>
-            {% if post.group %}
-                <a href="{% url 'posts:group_list' post.group.slug %}">
-                    все записи группы
-                </a>
+  <div class="container py-5">
+      {% for post in posts %}
+        <ul>
+            <li>
+              <h4><b>{{ post.title }}</b></h4>
+            </li>
+            <li>
+              <i>{{ post.anons }}</i>
+            </li>
+        </ul>
+          <p>{{ post.text }}</p>
+        <ul>
+            <li>
+                Автор: {{ post.author.get_full_name }}
+            </li>
+            <li>
+                 Дата публикации: {{ post.pub_date|date:"d E Y" }}
+            </li>
+        </ul>
+        {% if post.group %}
+            <a href="{% url 'posts:group_list' post.group.slug %}">
+                все записи группы
+            </a>
             <!--posts это пространство имён, прописанное в join/urls.py
             а group_posts это название view функции-->
             <!--из модели post берём поле group, а из поля group берём slug-->
-            {% endif %}
-            {% if not forloop.last %}
-                <hr>  <!--горизонтальная линия horizontal rule-->
-            {% endif %}
-        {% endfor %} <!--двойные фигурные скобки, обращение к словарю из
+        {% endif %}
+        {% if not forloop.last %}
+            <hr>  <!--горизонтальная линия horizontal rule-->
+        {% endif %}
+    {% endfor %} <!--двойные фигурные скобки, обращение к словарю из
                         view функции -->
-    </div>
+  </div>  
+{# {% endblock %} #}  
+
+<!--Здесь будет код паджинатора с добавлением ленты новостей
+по 10 на страницу -->
+<div class="container py-5">
+  {% for post in page_obj %}
+    <ul>
+        <li>
+          <h4><b>{{ post.title }}</b></h4>
+        </li>
+        <li>
+          <i>{{ post.anons }}</i>
+        </li>
+    </ul>
+      <p>{{ post.text }}</p>
+    <ul>
+        <li>
+            Автор: {{ post.author.get_full_name }}
+        </li>
+        <li>
+             Дата публикации: {{ post.pub_date|date:"d E Y" }}
+        </li>
+    </ul>
+    {% if post.group %}
+        <a href="{% url 'posts:group_list' post.group.slug %}">
+            все записи группы
+        </a>
+        <!--posts это пространство имён, прописанное в join/urls.py
+        а group_list это name из path -->
+        <!--из модели post берём поле group, а из поля group берём slug-->
+    {% endif %}
+    {% if not forloop.last %}
+        <hr>  <!--горизонтальная линия horizontal rule-->
+    {% endif %}
+{% endfor %} <!--двойные фигурные скобки, обращение к словарю из
+                    view функции -->
+</div> 
+
+  {% include "includes/paginator.html" %}
+  <!--добавляем созданный нами код навигации по страницам --> 
+  <!--представляем, что уже находимся внутри папки templates внутри приложения-->
+
 {% endblock %}  

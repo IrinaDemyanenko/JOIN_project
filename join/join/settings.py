@@ -25,16 +25,19 @@ SECRET_KEY = 'django-insecure-6$#9h9#42h$w)@9paq0$rsw^nuxr6rv&qt=ezwzt4hm6!+(u*m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['testserver', '127.0.0.1', 'localhost']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'about.apps.AboutConfig',
+    'core.apps.CoreConfig',
+    'users.apps.UsersConfig',
     'posts.apps.PostsConfig',
     'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'django.contrib.auth',  # Приложение для регистрация и авторизация пользователей
+    'django.contrib.contenttypes',  # Django контент-типовая система (даёт разрешения, связанные с моделями).
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -42,10 +45,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Управление сессиями между запросами
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Связывает пользователей, использующих сессии, запросами.
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -62,7 +65,13 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                # добавляет в контекст шаблона объект user, он может быть двух типов: AnonymousUser, либо экземпляром модели User
+                # Но самое важное — у этого объекта есть свойство is_authenticated; это свойство принимает значение True, если пользователь авторизован.
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.year.year',
+                # Найди в корне проекта папку core/, в ней - папку context_processors/,
+                # там - файл year.py, а в этом файле - функцию year().
+                # Словарь, который она возвращает, добавь на все страницы проекта.
             ],
         },
     },
@@ -121,7 +130,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
     "/var/www/static/",  #этот параметр пока не нужен при выгрузке на сервер,
-     # если папка static будет находиться на это сервере
+    # если папка static будет находиться на это сервере
 ]
 
 
@@ -129,3 +138,25 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = 'users:login'
+# Это адрес, на который Django будет перенаправлять пользователей
+# для авторизации. Это особенно важно при использовании декоратора
+# @login_required, о котором вы узнаете в следующих уроках (интрига).
+# Значение по умолчанию: '/accounts/login/'
+
+LOGIN_REDIRECT_URL = 'posts:index'
+# Здесь указывается, куда перенаправить пользователя после успешной
+# авторизации.
+# Значение по умолчанию: '/accounts/profile/'
+
+#LOGOUT_REDIRECT_URL = 'posts:index'
+# Значение по умолчанию: '/auth/logout/'
+# Адрес, на который будет направлен пользователь после выхода из системы.
+# Можно оставить штатный, а можно раскомментировать строку
+# LOGOUT_REDIRECT_URL = 'posts:index' — и при выходе из аккаунта
+# пользователи будут перенаправляться на главную страницу проекта.
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = 'sent_emails'

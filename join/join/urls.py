@@ -21,11 +21,14 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
-    path('', include('posts.urls', namespace='index')),
-    path('group/', include('posts.urls', namespace='all_groups')),
+    path('', include('posts.urls', namespace='posts')),
     path(
         'group/<slug:slug>/',
-         include('posts.urls', namespace='posts')
-        ), 
+        include('posts.urls', namespace='posts')
+        ),
+    path('group/', include('posts.urls', namespace='posts')),
+    path('about/', include('about.urls', namespace='about')),
     path('admin/', admin.site.urls),
+    path('auth/', include('users.urls', namespace='users')),
+    path('auth/', include('django.contrib.auth.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

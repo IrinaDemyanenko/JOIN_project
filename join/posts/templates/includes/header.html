@@ -11,6 +11,67 @@
           <!-- тег span используется для добавления нужных стилей отдельным участкам текста -->
           <span style="color:red">JOIN</span>PROJECT
         </a>
+        {% comment %}
+      Меню - список пунктов со стандартными классами Bootsrap.
+      Класс nav-pills нужен для выделения активных пунктов 
+      {% endcomment %}
+        <ul class="nav nav-pills">
+          {% with request.resolver_match.view_name as view_name %}
+          <li class="nav-item"> 
+            <a class="nav-link {% if view_name == 'about:author' %}active{% endif %}"
+              href="{% url 'about:author' %}">
+                Об авторе
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if view_name == 'about:tech' %}active{% endif %}" 
+              href="{% url 'about:tech' %}">Технологии</a>
+          </li>
+          <!-- Проверка: авторизован ли пользователь? -->
+          {% if user.is_authenticated %}
+          <li class="nav-item"> 
+            <a class="nav-link {% if view_name == 'posts:post_create' %}active{% endif %}" 
+              href="{% url 'posts:post_create' %}">Новая запись</a>
+          </li>
+          <li class="nav-item"> 
+            <a class="nav-link link-light 
+              {% if view_name == 'users:password_change_form' %}active{% endif %}" 
+              href="{% url 'users:password_change_form' %}">Изменить пароль</a>
+          </li>
+          <li class="nav-item"> 
+            <!--<a class="nav-link link-light 
+              {% if view_name == 'users:logout' %}active{% endif %}" 
+              href="{% url 'users:logout' %}">Выйти</a>
+            такой код не работает, ошибка 405-->
+              <form action="{% url 'users:logout' %}" method="post">
+                {% csrf_token %}
+                 <button type="submit" class="btn btn-$blue-100 link-light">Выйти</button>
+             </form>
+          </li>
+          <li>
+            Здравствуйте, {{ user.username }}
+          <li>
+          {% else %}
+          <li class="nav-item"> 
+            <a class="nav-link link-light 
+              {% if view_name == 'users:login' %}active{% endif %}" 
+              href="{% url 'users:login' %}">Войти</a>
+          </li>
+          <li class="nav-item"> 
+            <a class="nav-link link-light 
+              {% if view_name == 'users:signup' %}active{% endif %}" 
+              href="{% url 'users:signup' %}">Регистрация</a>
+          </li>
+          {% endif %}
+          {% endwith %}
+        </ul>
+      {# Конец добавленого в спринте #}
       </div>
-    </nav>      
+    </nav> 
+    
+    <!--Иконка бургер меню-->
+    <div class="burger">
+      <span></span>
+    </div>
   </header>
+  

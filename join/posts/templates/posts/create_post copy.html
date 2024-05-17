@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load uglify %}
+
+{% block title %}
+  {% if is_edit %} Редактировать запись {% else %} Добавить запись {% endif %}
+{% endblock %}
+
+{% block main_info %}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 p-5">
+        <div class="card">
+          <div class="card-header">       
+            {% if is_edit %} Редактировать пост {% else %} Создать новый пост {% endif %}
+          </div>
+          <!--Проверка на ошибки-->
+          {% if form.errors %}
+            {% for field in form %}
+              {% for error in field.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ field.label }}: {{ error|escape }}
+                </div>
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+          <div class="card-body">        
+            <form method="post" action="{% url 'posts:post_create' %}">
+            {% csrf_token %}    
+              <input type="hidden" name="csrfmiddlewaretoken" value="">
+              <div class="form-group row my-3 p-3">
+                <label for="id_title">
+                  Название поста                  
+                  <span class="required text-danger">*</span>                  
+                </label>
+                <input name="text" class="form-control" required id="id_title">
+                </input>               
+                <small id="id_title-help" class="form-text text-muted">
+                  Название нового поста
+                </small>
+              </div>
+              <div class="form-group row my-3 p-3">
+                <label for="id_anons">
+                  Анонс                                    
+                </label>
+                <textarea name="text" class="form-control" required id="id_anons">
+                </textarea>               
+                <small id="id_anons-help" class="form-text text-muted">
+                  Анонс нового поста
+                </small>
+              </div>                                
+              <div class="form-group row my-3 p-3">
+                <label for="id_text">
+                  Текст поста                  
+                  <span class="required text-danger">*</span>                  
+                </label>
+                <textarea name="text" cols="40" rows="10" class="form-control" required id="id_text">
+                </textarea>                
+                <small id="id_text-help" class="form-text text-muted">
+                  Текст нового поста
+                </small>                  
+              </div>            
+              <div class="form-group row my-3 p-3">
+                <label for="id_group">
+                  Group                  
+                </label>
+                <select name="group" class="form-control" id="id_group">
+                  <option value="" selected>---------</option>
+                  <option value="1">Группа: Лев Толстой – зеркало русской революции</option>
+                </select>
+                <small id="id_group-help" class="form-text text-muted">
+                  Группа, к которой будет относиться пост
+                </small>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                  {% if is_edit %} Сохранить {% else %} Добавить {% endif %}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
