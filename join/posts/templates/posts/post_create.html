@@ -27,10 +27,11 @@
           <div class="card-body">        
             <form method="post" action={% if post %}
               "{% url 'posts:post_edit' post_id=post.id %}"{% else %}
-              "{% url 'posts:post_create' %}"{% endif %}>
+              "{% url 'posts:post_create' %}"{% endif %} enctype="multipart/form-data">
               <!--Если пост существует, значит вызывается путь "редактировать пост",
               если же нет, то путь "создать пост";
-              post_id=post.id значит, что редактируется именно выбранный пост из БД-->
+              post_id=post.id значит, что редактируется именно выбранный пост из БД
+              enctype="multipart/form-data" значит, что форма будет передавать файлы-->
             {% csrf_token %}
               {% for field in form %}    
               <div class="form-group row my-3 p-3">

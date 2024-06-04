@@ -25,7 +25,18 @@ SECRET_KEY = 'django-insecure-6$#9h9#42h$w)@9paq0$rsw^nuxr6rv&qt=ezwzt4hm6!+(u*m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['testserver', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [
+    'testserver',
+    '127.0.0.1',
+    'localhost',
+    '[::1]',
+    'Aniri.pythonanywhere.com',
+    'www.Aniri.pythonanywhere.com'
+]
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 
 # Application definition
@@ -40,7 +51,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',  # Django контент-типовая система (даёт разрешения, связанные с моделями).
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',  # # Приложение staticfiles необходимо для работы приложения DjDT
+    'sorl.thumbnail', # приложение для создвния миниатюр, к нему установили библиотеку pillow
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +64,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # Связывает пользователей, использующих сессии, запросами.
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Добавьте новое приложения для обработки запросов DjDT
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'join.urls'
@@ -160,3 +175,19 @@ LOGIN_REDIRECT_URL = 'posts:index'
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
 EMAIL_FILE_PATH = 'sent_emails'
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+
+# это URL, по которому пользователи могут получить доступ к медиафайлам.
+MEDIA_URL = '/media/'
+# Абсолютный путь к директории, из которой ваше приложение Django
+# будет загружать медиафайлы.
+MEDIA_ROOT = BASE_DIR / 'media'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        # для разработки, для боевого сервера Memcached или Redis
+    }
+}
+

@@ -1,5 +1,4 @@
-from django.test import TestCase
-
+from django.test import TestCase, Client
 
 class StaticURLTests(TestCase):
     """Тестирует статические страницы проекта."""

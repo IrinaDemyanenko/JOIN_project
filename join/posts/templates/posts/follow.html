@@ -1,48 +1,20 @@
 {% extends "base.html" %}
 {% load thumbnail %}
-{% load uglify %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block main_info %}
 
   <div class="container py-2">
-    <h3>{{ title|uglify }}</h3>
+    <h3>{{ title }}</h3>
   </div>
-  <div class="container">
-    <h1>Поиск по записям</h1>
-      
-    <div class="card">
-      <div class="card-body">
-        <form class="form-inline" action="/">
-          <div class="form-row">
-            <input name="q" class="form-control form-control-lg" type="search" 
-            placeholder="Поиск" {% if keyword %} value="{{ keyword }}"{% endif %}>
-            <button class="btn" type="submit">Найти</button>
-          </div>
-        </form>
-      </div>
-    </div>
-<!--Здесь отображение результатов поиска на сайте-->
-  <div class="container">
-    {% for post in posts %}
-    <strong>
-      Автор: {{ post.author.username }},
-      Дата публикации: {{ post.pub_date|date:"d M Y" }},
-      Группа: {{ post.group.title }}
-    </strong>
-    <h4>{{ post.title }}</h4>
-    <h5><i>{{ post.anons }}</i></h5>
-    <p>{{ post.text|linebreaks }}</p>
-    {% endfor %}   
-<!--Здесь конец отображения результатов поиска на сайте-->
 
 <!--Виджет переключения лент -->
 {% include "includes/switcher.html" %}
-
-<div class="container py-5">
 <!--Здесь будет код паджинатора с добавлением ленты новостей
 по 10 на страницу -->
+<div class="container py-5">
+
   {% for post in page_obj %}
     <h4><b>{{ post.title }}</b></h4>
     {% if post.anons %}

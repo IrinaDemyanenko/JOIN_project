@@ -10,45 +10,6 @@ from posts.validators import validate_not_empty
 User = get_user_model()
 
 
-class Post(models.Model):
-    title = models.CharField(
-        max_length=50,
-        verbose_name='Название поста',
-        validators=[validate_not_empty],
-        help_text='Введите название поста'
-        )
-    anons = models.CharField(max_length=250, blank=True)
-    text = models.TextField(validators=[validate_not_empty])
-    pub_date = models.DateTimeField(auto_now_add=True)
-    group = models.ForeignKey(
-        'Group',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name='posts',
-        verbose_name='Группа',
-        help_text='Выберите группу'
-        )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='posts'
-        )
-    # в объекте пользователя появилось поле posts,
-    # в котором хранятся ссылки на все посты этого автора.
-    # И теперь можно получить список постов автора,
-    # обратившись к его свойству posts
-
-    def __str__(self) -> str:
-        return self.title
-
-    class Meta:
-        verbose_name = 'Пост'
-        verbose_name_plural = 'Посты'
-        ordering = ['-pub_date']
-    
-
-
 class Group(models.Model):
     title = models.CharField(max_length=200, verbose_name='Заголовок')
     slug = models.SlugField(max_length=200, unique=True, verbose_name='Читаемая ссылка')
@@ -68,6 +29,130 @@ class Group(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)[:100]
         super().save(*args, **kwargs)
+
+
+class Post(models.Model):
+    title = models.CharField(
+        max_length=50,
+        verbose_name='Название поста',
+        validators=[validate_not_empty],
+        help_text='Введите название поста'
+        )
+    anons = models.CharField(max_length=250, blank=True)
+    text = models.TextField(
+        verbose_name='Текст поста',
+        help_text='Текст нового поста',
+        validators=[validate_not_empty],
+        )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации',
+        )
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='posts',
+        verbose_name='Группа',
+        help_text='Выберите группу'
+        )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='posts',
+        verbose_name='Автор'
+        )
+    # в объекте пользователя появилось поле posts,
+    # в котором хранятся ссылки на все посты этого автора.
+    # И теперь можно получить список постов автора,
+    # обратившись к его свойству posts
+    # Поле для картинки (необязательное) 
+    image = models.ImageField(
+        'Картинка',
+        upload_to='posts/',
+        blank=True
+    )
+    # Аргумент upload_to указывает директорию, 
+    # в которую будут загружаться пользовательские файлы. 
+    # Путь в параметре upload_to указывается относительно адреса,
+    # указанного в settings.py в MEDIA_ROOT: в нём устанавливают полный путь
+    # к директории, куда будут загружаться файлы пользователей: обычно её
+    # называют media/.
+    # таким образом картинки, прикреплённые к постам, будут сохраняться
+    # в директории media/posts.
+    def __str__(self) -> str:
+        return self.text[:30]
+
+    class Meta:
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
+        ordering = ['-pub_date']
+    
+
+class Comment(models.Model):
+    """Создание комментария к посту.
+    
+    Комментировать может только зарегистрированный пользователь.
+    """
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Пост',
+        help_text='Напишите комментарий к посту'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор',
+        help_text='Имя автора комментария'
+    )
+    text = models.TextField(
+        max_length=500,
+        verbose_name='Комментарий',
+        validators=[validate_not_empty]
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата'
+    )
+
+    def __str__(self):
+        return self.text[:30]
+    
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ['-created']
+
+
+class Follow(models.Model):
+    """Система подписки на авторов."""
+    # пользователь, который подписывается
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+        verbose_name='Подписчик',
+        help_text='Пользователь, который подписывается на автора'
+    )
+    # пользователь, на которого подписываются
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+        verbose_name='Автор',
+        help_text='Автор, на которого подписываются'
+    )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+    
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'
 
 
 class Contact(models.Model):

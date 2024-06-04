@@ -1,14 +1,25 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from ..models import Post, Group
+from ..models import Post, Group, Follow
 from django import forms
+import shutil
+import tempfile
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
+
+
 
 
 User = get_user_model()
+# Создаем временную папку для медиа-файлов;
+# на момент теста медиа папка будет переопределена
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
-
-
+# Для сохранения media-файлов в тестах будет использоваться
+# временная папка TEMP_MEDIA_ROOT, а потом мы ее удалим
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class TestPostsViews(TestCase):
     """Тестирует views приложения posts."""
 
@@ -26,13 +37,41 @@ class TestPostsViews(TestCase):
             slug='slug_to_test',
             description='Здесь описание моей интереснейшей группы для теста!'
         )
+        # Для тестирования загрузки изображений 
+        # берём байт-последовательность картинки, 
+        # состоящей из двух пикселей: белого и чёрного
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
         cls.post = Post.objects.create(
             title='Тестовый постик!',
             anons='Анонс для затравочки)',
             text='Здест текст для тестового поста!',
             group=cls.group,
             author=cls.user,
+            image=uploaded
         )
+
+    
+    @classmethod
+    def tearDownClass(cls):  # отрабатывает после тестов
+        """Удаляет папку TEMP_MEDIA_ROOT с тестовыми медиафайлами."""
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        # Модуль shutil - библиотека Python с удобными инструментами 
+        # для управления файлами и директориями: 
+        # создание, удаление, копирование, перемещение, изменение папок и файлов
+        # Метод shutil.rmtree удаляет директорию и всё её содержимое
 
     def setUp(self):
         # cоздаёт 3 вэб-клиента: для гостя сайта,
@@ -60,6 +99,7 @@ class TestPostsViews(TestCase):
         Значения полей постов и групп лучше передавать не прямо:
         'Тестовый постик!' лучше как self.post.title. 
         """
+        cache.clear()
         # Собираем в словарь пары "имя_html_шаблона: reverse(‘namespace:name’)
         templates_pages_names = {
             reverse('posts:index'): 'posts/index.html',
@@ -83,13 +123,18 @@ class TestPostsViews(TestCase):
         # во всех вложенных тестах
 
     def check_post_info(self, post):
-        """Проверяет правильность заполнения полей поста."""
+        """Проверяет правильность заполнения полей поста.
+        
+        Вспомогательная функция.
+        Будем применять вдальнейшем, в тестах.
+        """
         with self.subTest(post=post):
             self.assertEqual(post.title, self.post.title)
             self.assertEqual(post.anons, self.post.anons)
             self.assertEqual(post.text, self.post.text)
             self.assertEqual(post.author, self.post.author)
             self.assertEqual(post.group, self.post.group)
+            self.assertEqual(post.image, self.post.image)
 
 
         # Проверка словарей контекста
@@ -101,6 +146,7 @@ class TestPostsViews(TestCase):
     def test_index_page_shows_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
         # клиент гостя, т к минимальные права на сайте
+        cache.clear()
         response = self.visitor.get(reverse('posts:index'))
         # Взяли первый элемент из списка и проверили, что его содержание
         # совпадает с ожидаемым.
@@ -157,7 +203,8 @@ class TestPostsViews(TestCase):
             'text': forms.fields.CharField,
             'title': forms.fields.CharField,
             'anons': forms.fields.CharField,
-            'group': forms.fields.ChoiceField,  # тк группа созд. админом
+            'group': forms.fields.ChoiceField,  # тк группа созд. админом, можно только выбрать
+            'image': forms.fields.ImageField
         }
         # Проверяем, что типы полей формы в словаре context
         # соответствуют ожиданиям
@@ -185,14 +232,52 @@ class TestPostsViews(TestCase):
             'text': forms.fields.CharField,
             'title': forms.fields.CharField,
             'anons': forms.fields.CharField,
-            'group': forms.fields.ChoiceField,  # тк группа созд. админом
+            'group': forms.fields.ChoiceField,  # тк группа созд. админом, можно только выбрать
+            'image': forms.fields.ImageField
         }
         for value, expected in form_edit_post.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
+    def test_cache_index_page(self):
+        """Проверяет работу кэша на главной странице.
+        
+        Кэширование подключено к шаблону posts/index.html,
+        ключ index_page, под которым данные хранятся в кэше.
+        """
+        # на главной странице все посты, значит сейчас все они в кэше
+        # зарегистрированный пользователь заходит на главную стр
+        # добавим новый пост, он должен будет появиться на главной странице
+        # только через 20 секунд
+        cache.clear()
+        response = self.another_user.get(reverse('posts:index'))
+        posts_cache = response.content
+        new_post = Post.objects.create(
+            title='Новый пост',
+            anons='Новый анонс',
+            text='Здест текст',
+            group=TestPostsViews.group,
+            author=TestPostsViews.user,
+        )
+        # зарегистрированный пользователь заходит на главную стр после
+        # создания поста, кэша ещё нет, он сейчас будет записываться с постом
+        #new_post.delete()
+        # зарегистрированный пользователь заходит на главную стр после удаления поста
+        second_response = self.another_user.get(reverse('posts:index'))
+        second_posts = second_response.content
+        # но т к 20 секунд не прошло, контекст страницы должен совпасть 
+        self.assertEqual(posts_cache, second_posts)
+        # теперь очистим кэш и перезайдем на главную страницу
+        cache.clear()
+        new_response = self.another_user.get(reverse('posts:index'))
+        # кэш перезаписался, теперь там ещё один пост,
+        # результат первоначального кэша и нового не должен совпадать
+        self.assertNotEqual(posts_cache, new_response.content)
 
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class TestPaginator(TestCase):
     """Тестирует паджинатор на страницах.
     
@@ -212,7 +297,22 @@ class TestPaginator(TestCase):
             slug='my_paginator_test',
             description='Описание группы'
         )
-
+        # Для тестирования загрузки изображений 
+        # берём байт-последовательность картинки, 
+        # состоящей из двух пикселей: белого и чёрного
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
         # создадим 15 постов в БД, принадлежащих одному автору
         # и одной группе
         for i in range(15):  # from 0 to 14
@@ -222,8 +322,19 @@ class TestPaginator(TestCase):
                 text=f'Здест текст {i} для тестового поста!',
                 group=cls.group,
                 author=cls.user,
+                image=uploaded
             )
             i += 1
+    
+    @classmethod
+    def tearDownClass(cls):  # отрабатывает после тестов
+        """Удаляет папку TEMP_MEDIA_ROOT с тестовыми медиафайлами."""
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        # Модуль shutil - библиотека Python с удобными инструментами 
+        # для управления файлами и директориями: 
+        # создание, удаление, копирование, перемещение, изменение папок и файлов
+        # Метод shutil.rmtree удаляет директорию и всё её содержимое
 
     def setUp(self):
         # создадим вэб-клиент для зарег. автора постов
@@ -249,4 +360,91 @@ class TestPaginator(TestCase):
                 self.assertEqual(len(response2.context['page_obj']), 5)
 
 
+class TestFollow(TestCase):
+    """Тестирует сервис подписки/отписки на автора."""
+    # arrange - готовим тестовые данные
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # создадим двух зарегистр пользователей, один будет подписан на другого
+        cls.user = User.objects.create_user(username='First_author')
+        cls.another_user = User.objects.create_user(username='Second_user')
+        cls.third_user = User.objects.create_user(username='Third_user')
+        cls.group = Group.objects.create(
+            title='Тестовая группа',
+            slug='slug_to_test',
+            description='Здесь описание моей интереснейшей группы для теста!'
+        )
+        cls.post = Post.objects.create(
+            title='Тестовый постик!',
+            anons='Анонс для затравочки)',
+            text='Здест текст для тестового поста!',
+            group=cls.group,
+            author=cls.user,
+        )
+    
+    def setUp(self):
+        # cоздаёт 4 вэб-клиента: для гостя сайта,
+        # зарегистр пользователей и автора поста
+        self.author = Client()
+        self.author.force_login(TestFollow.user)
+        self.auth_user = Client()
+        self.auth_user.force_login(TestFollow.another_user)
+        self.one_more = Client()
+        self.one_more.force_login(TestFollow.third_user)
+        
+    
+    def test_auth_user_can_follow_unfollow(self):
+        """Тест: Зарегистрированный пользователь может подписываться
+        на других зарегистрированных пользователей и отписываться от них.
+        """
+        # посчитаем кол-во записей в моделе Follow
+        follow_count = Follow.objects.count()
+        # не автор, но зарег польз, заходит в профиль автора и подписывается на него
+        # в теле view прописано создание записи в моделе Follow
+        response = self.auth_user.get(reverse(
+            'posts:profile_follow', kwargs={'username': TestFollow.user.username}))
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
+        response_unfollow = self.auth_user.get(reverse(
+            'posts:profile_unfollow', kwargs={'username': TestFollow.user.username}))
+        self.assertEqual(Follow.objects.count(), follow_count)
+        
 
+    def test_follower_post_feed(self):
+        """Тест: Новая запись автора появляется у тех, кто на него подписан."""
+        # подпишем одного авторизованного пользователя на другого через модель
+        Follow.objects.create(
+            user=TestFollow.another_user,
+            author=TestFollow.user
+        )
+        # пока один пост (из setUpClass)
+        response = self.auth_user.get(reverse('posts:follow_index'))
+        # создадим новый пост
+        post = Post.objects.create(
+            title='Новый пост',
+            text='Здесь текст',
+            author=TestFollow.user
+        )
+        response_2 = self.auth_user.get(reverse('posts:follow_index'))
+        self.assertEqual(
+            len(response.context['page_obj']) + 1,
+            len(response_2.context['page_obj'])
+        )
+        self.assertIn(post, response_2.context['page_obj'].object_list)
+        
+
+    def test_nonfollower_post_feed(self):
+        """Тест: Новая запись автора не появляется у тех, кто не подписан."""
+        # подпишем одного авторизованного пользователя на другого через модель
+        Follow.objects.create(
+            user=TestFollow.another_user,
+            author=TestFollow.user
+        )
+        # создадим новый пост
+        post = Post.objects.create(
+            title='Новый пост',
+            text='Здесь текст',
+            author=TestFollow.user
+        )
+        response = self.one_more.get(reverse('posts:follow_index'))
+        self.assertNotIn(post, response.context['page_obj'].object_list)
