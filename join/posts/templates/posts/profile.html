@@ -7,7 +7,8 @@
 
     <div class="container py-5">
       <div class="mb-5">        
-        <h1>Все посты пользователя {{ author.get_full_name }} </h1>
+        <h1>Все посты пользователя {{ author.username }} </h1>
+        <h3>Имя пользователя: {{ author.get_full_name }} </h3>
         <h3>Всего постов: {{ posts_author.count }} </h3>
         <!--Если пользователь автор профиля, ему кнопки вообще не показывать-->
         {% if author != request.user %}
@@ -41,6 +42,9 @@
               Дата публикации: {{ post.pub_date|date:'d E Y' }} 
             </li>
           </ul>
+          <h4>
+              {{ post.title|linebreaksbr }}
+          </h4>
           <p>
             {% if post.anons %}  <!--если есть анонс-->
               {{ post.anons|linebreaksbr }}

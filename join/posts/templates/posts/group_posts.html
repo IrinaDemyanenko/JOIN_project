@@ -18,22 +18,27 @@
       <p>{{ group.description|linebreaks }}</p> 
       {% for post in page_obj %}
         <ul>
-            <li>
-                Автор: {{ post.author.username }}
+            <li class="list-group-item">
+                Автор:
+                <a href="{% url "posts:profile" post.author.username %}">
+                  {{ post.author.username }}
+                </a> 
             </li>
             <li class="list-group-item">
-                <a href="{% url "posts:profile" post.author.username %}">
-                  все посты пользователя
-                </a>
-            </li>
-            <li>
                 Дата публикации: {{ post.pub_date|date:'d E Y' }}
             </li>
         </ul>
         {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
           <img class="card-img my-2" src="{{ im.url }}">
         {% endthumbnail %}
-        <p>{{ post.text|linebreaks }}</p>
+        <h3>{{ post.title}}</h3>
+        <h5>{{ post.anons}}</h5>
+        <p>{{ post.text|linebreaks|truncatewords:30 }}</p>
+        <p>
+          <a href="{% url "posts:post_detail" post.pk %}">Подробная информация</a>
+          <!-- posts - namespace, post_detail - name from path -->
+          <!-- в этом посте берём значение pk -->
+        </p>
         {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
     </div>
