@@ -32,6 +32,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     #path("__debug__/", include("debug_toolbar.urls"))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

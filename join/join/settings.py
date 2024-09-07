@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',  # # Приложение staticfiles необходимо для работы приложения DjDT
     'sorl.thumbnail', # приложение для создвния миниатюр, к нему установили библиотеку pillow
     'debug_toolbar',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -191,3 +192,11 @@ CACHES = {
     }
 }
 
+
+# REST_FRAMEWORK = {
+#     # Use Django's standard `django.contrib.auth` permissions,
+#     # or allow read-only access for unauthenticated users.
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+#     ]
+# }

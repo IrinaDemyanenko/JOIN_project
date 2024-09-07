@@ -27,4 +27,6 @@ urlpatterns = [
     # в представление — переменную post_id.
     path('create/', views.post_create, name='post_create'),
     path('follow/', views.follow_index, name='follow_index'),
+    path('api/v1/posts/<int:post_id>', views.api_post_detail, name='api_post_detail'),
+    path('api/v1/posts/', views.api_posts, name='api_posts'),
 ]
