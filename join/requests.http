@@ -1,5 +1,5 @@
 # пример GET запроса
-GET https://jsonplaceholder.typicode.com/posts/1 
+GET http://127.0.0.1:8000/api/v1/posts/ 
 
 ###
 POST https://jsonplaceholder.typicode.com/posts
@@ -12,7 +12,14 @@ Content-Type: application/json
 } 
 
 ###
-GET https://jsonplaceholder.typicode.com/comments?postId=1
-
+POST http://127.0.0.1:8000/api/v1/posts/ 
+Content-Type: application/json
+{
+    "title": "«Режим Бога» в Windows.",
+    "anons": "!!!!!",
+    "text": "Способ 1. Через папку на рабочем столе\r\nЩелкните правой кнопкой мыши на рабочем столе и выберите «Создать папку».\r\n\r\nНазовите папку GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}. Вместо «GodMode»  может быть любое слово, главное - полностью вставить код.\r\n\r\nЗначок папки превратится в мини «Панель управления», а весь доступный функционал с поиском нужных файлов будет перед вами. Готово!\r\n\r\nСпособ 2. Через ярлык в «Панели управления»\r\nСоздайте текстовый файл с расширением .reg и вставьте в него следующий код:\r\nWindows Registry Editor Version 5.00\r\n[HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\{D15ED2E1-C75B-443c-BD7C-FC03B2F08C17}]\r\n@=\"Режим бога\"\r\n\"InfoTip\"=\"Все элементы\"\r\n\"System.ControlPanel.Category\"=\"5\"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\{D15ED2E1-C75B-443c-BD7C-FC03B2F08C17}\\DefaultIcon]\r\n@=\"%SystemRoot%\\\\System32\\\\imageres.dll,-27\"\r\n[HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\{D15ED2E1-C75B-443c-BD7C-FC03B2F08C17}\\Shell\\Open\\Command]\r\n@=\"explorer.exe shell:::{ED7BA470-8E54-465E-825C-99712043E01C}\"\r\n[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ControlPanel\\NameSpace\\{D15ED2E1-C75B-443c-BD7C-FC03B2F08C17}]\r\n@=\"Режим бога\"\r\n\r\nСохраните файл и запустите его от имени администратора.\r\n\r\nНажмите «Да» и подтвердите внесение изменений в реестр Windows. Сразу после в панели управления Windows появится ярлык «Режим Бога». Готово!",
+    "group": 1,
+    "author": 1
+}
 ###
 GET https://jsonplaceholder.typicode.com/posts

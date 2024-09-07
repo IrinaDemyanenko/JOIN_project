@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .api_view import APIPost, APIPostDetail, APIGenericPostList, APIGenericPostDetail
 
 app_name = 'posts'  # переменная namespase
 
@@ -27,6 +28,6 @@ urlpatterns = [
     # в представление — переменную post_id.
     path('create/', views.post_create, name='post_create'),
     path('follow/', views.follow_index, name='follow_index'),
-    path('api/v1/posts/<int:post_id>', views.api_post_detail, name='api_post_detail'),
-    path('api/v1/posts/', views.api_posts, name='api_posts'),
+    path('api/v1/posts/<int:pk>', APIGenericPostDetail.as_view(), name='api_post_detail'),
+    path('api/v1/posts/', APIGenericPostList.as_view(), name='api_posts'),
 ]
