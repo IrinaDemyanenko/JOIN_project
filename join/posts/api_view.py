@@ -11,7 +11,7 @@ from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
 
 from .serializer import PostSerializer
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -185,5 +185,15 @@ class APIGenericPostList(ListCreateAPIView):
 
 class APIGenericPostDetail(RetrieveUpdateDestroyAPIView):
     """Его работа — возвращать, обновлять или удалять объекты модели по одному."""
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+
+class PostViewSet(viewsets.ModelViewSet):
+    """Этот набор представлений предоставит доступ ко всем
+    операциям с моделью Post (CRUD). Созданный для него роутер
+    будет генерировать два эндпоинта:
+    api/v1/posts/, api/v1/posts/<int:pk>/.
+    """
     queryset = Post.objects.all()
     serializer_class = PostSerializer

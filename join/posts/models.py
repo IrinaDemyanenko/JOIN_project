@@ -10,6 +10,22 @@ from posts.validators import validate_not_empty
 User = get_user_model()
 
 
+class Tag(models.Model):
+    """Хэштэги к постам.
+    
+    Связаны с постами отношением «многие-ко-многим».
+    При запросе постов должна возвращаться информация о всех
+    связанных с конкретным постом хештегах, а при добавлении
+    или обновлении поста нужно обеспечить возможность
+    передавать названия хештегов списком прямо в теле запроса.
+    Без указания хештегов пост через API тоже должен создаваться.
+    """
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
 class Group(models.Model):
     title = models.CharField(max_length=200, verbose_name='Заголовок')
     slug = models.SlugField(max_length=200, unique=True, verbose_name='Читаемая ссылка')
@@ -81,6 +97,11 @@ class Post(models.Model):
     # называют media/.
     # таким образом картинки, прикреплённые к постам, будут сохраняться
     # в директории media/posts.
+
+    # Связь будет описана через вспомогательную модель TagPost
+    # Связываем модель Post с моделью Tag через таблицу связи TagPost
+    tag = models.ManyToManyField(Tag, through='TagPost')
+    
     def __str__(self) -> str:
         return self.text[:30]
 
@@ -89,6 +110,23 @@ class Post(models.Model):
         verbose_name_plural = 'Посты'
         ordering = ['-pub_date']
     
+
+# В этой модели будут связаны id поста и id его тэгов
+# вспомогательная таблица для связи "многие-ко-многим"
+class TagPost(models.Model):
+    """Связывает посты и тэги.
+    
+    Каждый тэг может принадлежать многим постам, так же
+    как и каждый пост может обладать многими тэгами.
+    Связь "многие-ко-многим".
+    """
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.post} {self.tag}'
+
 
 class Comment(models.Model):
     """Создание комментария к посту.

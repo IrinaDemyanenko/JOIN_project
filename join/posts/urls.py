@@ -1,8 +1,17 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
-from .api_view import APIPost, APIPostDetail, APIGenericPostList, APIGenericPostDetail
+from .api_view import (APIPost, APIPostDetail,
+                       APIGenericPostList, APIGenericPostDetail,
+                       PostViewSet)
+from rest_framework.routers import DefaultRouter
+
 
 app_name = 'posts'  # переменная namespase
+# создаём роутер
+router = DefaultRouter()
+# регистрируем созданный ViewSet
+router.register(r'posts', PostViewSet)
+
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -28,6 +37,7 @@ urlpatterns = [
     # в представление — переменную post_id.
     path('create/', views.post_create, name='post_create'),
     path('follow/', views.follow_index, name='follow_index'),
-    path('api/v1/posts/<int:pk>', APIGenericPostDetail.as_view(), name='api_post_detail'),
-    path('api/v1/posts/', APIGenericPostList.as_view(), name='api_posts'),
+    # path('api/v1/posts/<int:pk>', APIGenericPostDetail.as_view(), name='api_post_detail'),
+    # path('api/v1/posts/', APIGenericPostList.as_view(), name='api_posts'),
+    path('api/v1/', include(router.urls))
 ]
