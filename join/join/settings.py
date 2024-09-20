@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'sorl.thumbnail', # приложение для создвния миниатюр, к нему установили библиотеку pillow
     'debug_toolbar',
     'rest_framework',
+    'rest_framework.authtoken'  # для авторизации по простому токену
 ]
 
 MIDDLEWARE = [
@@ -200,3 +201,18 @@ CACHES = {
 #         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
 #     ]
 # }
+
+REST_FRAMEWORK = {
+    # Запретить доступ всем неаутентифицированным пользователям: ограничение
+    # доступа настраивается с помощью пермишенов (англ. permissions, «разрешения»).
+    # Чтобы запретить доступ без токена, нужно добавить значение IsAuthenticated
+    # для ключа DEFAULT_PERMISSION_CLASSES
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # в настройках REST_FRAMEWORK объявить новый способ аутентификации
+    # TokenAuthentication
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}

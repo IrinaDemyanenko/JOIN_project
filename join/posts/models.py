@@ -12,7 +12,7 @@ User = get_user_model()
 
 class Tag(models.Model):
     """Хэштэги к постам.
-    
+
     Связаны с постами отношением «многие-ко-многим».
     При запросе постов должна возвращаться информация о всех
     связанных с конкретным постом хештегах, а при добавлении
@@ -83,14 +83,14 @@ class Post(models.Model):
     # в котором хранятся ссылки на все посты этого автора.
     # И теперь можно получить список постов автора,
     # обратившись к его свойству posts
-    # Поле для картинки (необязательное) 
+    # Поле для картинки (необязательное)
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
         blank=True
     )
-    # Аргумент upload_to указывает директорию, 
-    # в которую будут загружаться пользовательские файлы. 
+    # Аргумент upload_to указывает директорию,
+    # в которую будут загружаться пользовательские файлы.
     # Путь в параметре upload_to указывается относительно адреса,
     # указанного в settings.py в MEDIA_ROOT: в нём устанавливают полный путь
     # к директории, куда будут загружаться файлы пользователей: обычно её
@@ -101,7 +101,7 @@ class Post(models.Model):
     # Связь будет описана через вспомогательную модель TagPost
     # Связываем модель Post с моделью Tag через таблицу связи TagPost
     tag = models.ManyToManyField(Tag, through='TagPost')
-    
+
     def __str__(self) -> str:
         return self.text[:30]
 
@@ -109,13 +109,13 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-pub_date']
-    
+
 
 # В этой модели будут связаны id поста и id его тэгов
 # вспомогательная таблица для связи "многие-ко-многим"
 class TagPost(models.Model):
     """Связывает посты и тэги.
-    
+
     Каждый тэг может принадлежать многим постам, так же
     как и каждый пост может обладать многими тэгами.
     Связь "многие-ко-многим".
@@ -130,7 +130,7 @@ class TagPost(models.Model):
 
 class Comment(models.Model):
     """Создание комментария к посту.
-    
+
     Комментировать может только зарегистрированный пользователь.
     """
     post = models.ForeignKey(
@@ -159,7 +159,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text[:30]
-    
+
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
@@ -188,7 +188,7 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-    
+
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
 

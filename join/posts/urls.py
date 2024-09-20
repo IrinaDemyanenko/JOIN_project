@@ -2,7 +2,7 @@ from django.urls import path, include
 from . import views
 from .api_view import (APIPost, APIPostDetail,
                        APIGenericPostList, APIGenericPostDetail,
-                       PostViewSet)
+                       PostViewSet, GroupViewSet, CommentViewSet)
 from rest_framework.routers import DefaultRouter
 
 
@@ -10,7 +10,11 @@ app_name = 'posts'  # переменная namespase
 # создаём роутер
 router = DefaultRouter()
 # регистрируем созданный ViewSet
+#api/v1/posts/ (GET, POST): получаем список всех постов или создаём новый пост
+#api/v1/posts/{post_id}/ (GET, PUT, PATCH, DELETE): получаем, редактируем или удаляем пост по id
 router.register(r'posts', PostViewSet)
+router.register(r'groups', GroupViewSet)
+router.register(r'^posts/(?P<post_id>\d+)/comments', CommentViewSet, basename='comment')
 
 
 urlpatterns = [
