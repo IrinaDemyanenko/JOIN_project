@@ -19,7 +19,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 import debug_toolbar
-from rest_framework.authtoken import views
 
 
 urlpatterns = [
@@ -34,7 +33,6 @@ urlpatterns = [
     path('auth/', include('users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/v1/api-token-auth/', views.obtain_auth_token)
     #path("__debug__/", include("debug_toolbar.urls"))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

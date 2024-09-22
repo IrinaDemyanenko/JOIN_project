@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
 
-from .serializer import PostSerializer
+from api.serializer import PostSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -112,7 +112,7 @@ def profile(request, username):
     # зарегистрированным пользователям, нужно проверить,
     # зарегистрирован ли текущий пользователь
     following = request.user.is_authenticated  # если нет, то False
-    if following:  # если да, то 
+    if following:  # если да, то
             # нужно проверить есть ли запись в БД модели Follow
             # где user=request.user, author=author
             following = author.following.filter(user=request.user).exists()
@@ -121,7 +121,7 @@ def profile(request, username):
             # полю user=request.user
             # если такие запист вообще существуют, тогда переменная не будет пустой
             # будет отдавать True
-    
+
 
     context = {
         'author': author,
@@ -192,7 +192,7 @@ def post_edit(request, post_id):
     """Позволяет отредактироать пост.
     Пост берётся из БД по id.
     Если запрос отправляет автор поста - может отредактировать пост.
-    Если запрос отправляет не автор поста - его перенаправляет 
+    Если запрос отправляет не автор поста - его перенаправляет
     на страницу детали поста.
     """
     post = get_object_or_404(Post, pk=post_id)
@@ -224,11 +224,11 @@ def post_edit(request, post_id):
 @login_required
 def add_comment(request, post_id):
     """Отображает страницу детали поста с формой создания комментария.
-    
+
     Комментарий могут оставить только зарегистрированные пользователи.
     """
     # Получим пост с post_id
-    # Если есть пост с таким id, мы его получим, если нет - ошибка 404 
+    # Если есть пост с таким id, мы его получим, если нет - ошибка 404
     post = get_object_or_404(Post, pk=post_id)
     # Получим форму создания комментария
     form = CommentForm(request.POST or None)
@@ -267,10 +267,10 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     """Подписаться на автора.
-    
+
     Подписаться можно только на странице профиля автора.
     После подписки, пользователь перенаправляется на страницу
-    профиля автора, на которого только что подписался. 
+    профиля автора, на которого только что подписался.
     """
     # проверяем, что автор профиля существует
     author = get_object_or_404(User, username=username)
@@ -288,7 +288,7 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     """Отписаться от автора.
-    
+
     Отписаться можно только на странице профиля автора.
     После отписки, пользователь перенаправляется на страницу
     профиля автора, от которого только что отписался.
@@ -303,4 +303,3 @@ def profile_unfollow(request, username):
         )
         follower.delete()
     return redirect('posts:profile', username=username)
-

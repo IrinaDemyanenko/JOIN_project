@@ -1,6 +1,6 @@
 from django.urls import path, include
 from . import views
-from .api_view import (APIPost, APIPostDetail,
+from api.api_view import (APIPost, APIPostDetail,
                        APIGenericPostList, APIGenericPostDetail,
                        PostViewSet, GroupViewSet, CommentViewSet)
 from rest_framework.routers import DefaultRouter

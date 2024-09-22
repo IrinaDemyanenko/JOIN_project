@@ -215,4 +215,23 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    #В параметре DEFAULT_THROTTLE_CLASSES мы регистрируем классы
+    # пользователей (UserRateThrottle и AnonRateThrottle), а в
+    # DEFAULT_THROTTLE_RATES устанавливаем для них ограничения
+    # в формате количество_запросов/период_времени.Количество
+    # запросов указывается целым числом, период времени указывается
+    # как second, minute, hour или day
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',  # для крафтовых ограничений
+    ],
+
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/minute',  # Лимит для UserRateThrottle
+        'anon': '10/minute',  # Лимит для AnonRateThrottle
+        # Имена (ключи) для scope придумывает разработчик,
+        # в меру собственной фантазии
+        'one_per_minute': '1/minute',
+    },
 }

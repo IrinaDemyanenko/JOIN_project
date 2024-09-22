@@ -2,10 +2,11 @@ from django.shortcuts import render, get_object_or_404, redirect, get_list_or_40
 from django.http import HttpResponse
 from django.template import loader
 
-from .models import Post, Group, User, Comment, Follow
+from api.throttling import LunchBreakThrottle
+from posts.models import Post, Group, User, Comment, Follow
 import datetime
 from django.core.paginator import Paginator
-from .forms import PostForm, CommentForm
+from posts.forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
@@ -18,7 +19,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from rest_framework.permissions import IsAuthenticated
-from .permissions import AuthorPermission
+from api.permissions import AuthorPermission, IsAuthorOrReadOnly
 
 
 def get_post(request, pk):
@@ -200,6 +201,8 @@ class PostViewSet(viewsets.ModelViewSet):
     """
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [IsAuthorOrReadOnly, ]
+    throttle_classes = [LunchBreakThrottle, ]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
