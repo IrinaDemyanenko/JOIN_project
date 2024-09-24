@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect, get_list_or_40
 from django.http import HttpResponse
 from django.template import loader
 
+from api.pagination import CustomPagination
 from api.throttling import LunchBreakThrottle
 from posts.models import Post, Group, User, Comment, Follow
 import datetime
@@ -20,6 +21,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 
 from rest_framework.permissions import IsAuthenticated
 from api.permissions import AuthorPermission, IsAuthorOrReadOnly
+
+from rest_framework import filters
 
 
 def get_post(request, pk):
@@ -201,8 +204,15 @@ class PostViewSet(viewsets.ModelViewSet):
     """
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    # читать могут все, редактировать только автор поста
     permission_classes = [IsAuthorOrReadOnly, ]
+    # добавили ограничения на публикации и доступ к ним в обеденное время,
+    # ограничения на проект user=100/minute, anon=10/minute
     throttle_classes = [LunchBreakThrottle, ]
+    pagination_class = CustomPagination
+    # добавим возможность поиска по тексту по регулярным выражениям
+    filter_backends = [filters.SearchFilter, ]
+    search_fields = ['$text']
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

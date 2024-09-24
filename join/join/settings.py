@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -232,6 +233,11 @@ REST_FRAMEWORK = {
         'anon': '10/minute',  # Лимит для AnonRateThrottle
         # Имена (ключи) для scope придумывает разработчик,
         # в меру собственной фантазии
-        'one_per_minute': '1/minute',
+        #'one_per_minute': '1/minute',
     },
+
+    # добавим разбиение ответа API по страницам - пагинация
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    #'DEFAUT_PAGINATION_CLASS': 'api.pagination.CustomPagination',
+    'PAGE_SIZE': 10,
 }
