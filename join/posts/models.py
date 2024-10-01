@@ -188,6 +188,15 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        ordering = ['id']
+        # чтобы не допустить подписку на одного и того же автора дважды
+        # Такую же проверку нужно реализовать и на уровне сериализатора.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_follower_author'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'

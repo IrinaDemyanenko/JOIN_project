@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -56,12 +57,16 @@ INSTALLED_APPS = [
     'sorl.thumbnail', # приложение для создвния миниатюр, к нему установили библиотеку pillow
     'debug_toolbar',
     'rest_framework',
-    'rest_framework.authtoken'  # для авторизации по простому токену
+    #'rest_framework.authtoken',  # для авторизации по простому токену
+    'djoser',  # для авторизации по JWT
+    'corsheaders',  # разрешение доступа к api
+    'drf_spectacular',  # подключаем расширение для автоматической генерации документации OpenAPI
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',  # Управление сессиями между запросами
+    'corsheaders.middleware.CorsMiddleware',  # обработчик для разрешения доступа к api CORS
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # Связывает пользователей, использующих сессии, запросами.
@@ -214,8 +219,10 @@ REST_FRAMEWORK = {
     # в настройках REST_FRAMEWORK объявить новый способ аутентификации
     # TokenAuthentication
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        #'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+
     #В параметре DEFAULT_THROTTLE_CLASSES мы регистрируем классы
     # пользователей (UserRateThrottle и AnonRateThrottle), а в
     # DEFAULT_THROTTLE_RATES устанавливаем для них ограничения
@@ -240,4 +247,26 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     #'DEFAUT_PAGINATION_CLASS': 'api.pagination.CustomPagination',
     'PAGE_SIZE': 10,
+
+    # Схема для автоматической генерации API-документации OpenAPI
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SIMPLE_JWT = {
+    # Устанавливаем срок жизни токена
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=360),
+    'AUTH_HEADER_TYPES': ('Bearer',), # это слово будет стоять перед токеном, вместо стандартного Token
+}
+
+CORS_ORIGIN_ALLOW_ALL = True  # разрешить доступ к api всем
+CORS_URLS_REGEX = r'^/api/.*$'  # а именно к адресам вида,
+# начинаются с api далее любые (.) символы повторяющиеся сколько угодно раз (*)
+
+# Настройки для drf-spectacular
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Join-project API',  # Название API
+    # Описание API
+    'DESCRIPTION': 'API для управления постами, комментариями, фоловерами социальной сети.',
+    'VERSION': 'v1',  # Версия API
+    'SERVE_INCLUDE_SCHEMA': False  # Отключение схемы в ответах API
 }

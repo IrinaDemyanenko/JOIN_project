@@ -8,13 +8,13 @@ from rest_framework.routers import DefaultRouter
 
 app_name = 'posts'  # переменная namespase
 # создаём роутер
-router = DefaultRouter()
+#router = DefaultRouter()
 # регистрируем созданный ViewSet
 #api/v1/posts/ (GET, POST): получаем список всех постов или создаём новый пост
 #api/v1/posts/{post_id}/ (GET, PUT, PATCH, DELETE): получаем, редактируем или удаляем пост по id
-router.register(r'posts', PostViewSet)
-router.register(r'groups', GroupViewSet)
-router.register(r'^posts/(?P<post_id>\d+)/comments', CommentViewSet, basename='comment')
+#router.register(r'posts', PostViewSet)
+#router.register(r'groups', GroupViewSet)
+#router.register(r'^posts/(?P<post_id>\d+)/comments', CommentViewSet, basename='comment')
 
 
 urlpatterns = [
@@ -43,5 +43,5 @@ urlpatterns = [
     path('follow/', views.follow_index, name='follow_index'),
     # path('api/v1/posts/<int:pk>', APIGenericPostDetail.as_view(), name='api_post_detail'),
     # path('api/v1/posts/', APIGenericPostList.as_view(), name='api_posts'),
-    path('api/v1/', include(router.urls))
+    #path('api/v1/', include(router.urls))
 ]

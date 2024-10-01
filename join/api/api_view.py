@@ -12,8 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
 
-from .serializer import CommentSerializer, GroupSerializer, PostSerializer
-from rest_framework import status, viewsets
+from api.serializer import CommentSerializer, FollowSerializer, GroupSerializer, PostSerializer
+from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,6 +23,17 @@ from rest_framework.permissions import IsAuthenticated
 from api.permissions import AuthorPermission, IsAuthorOrReadOnly
 
 from rest_framework import filters
+from rest_framework.exceptions import ValidationError
+
+class BaseGetPostViewSet(mixins.CreateModelMixin,
+                  mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin,
+                  viewsets.GenericViewSet):
+    """Базовый класс.
+    Позволяет создать новую запись в моделе, получить список записей,
+    получить одну запись.
+    """
+    pass
 
 
 def get_post(request, pk):
@@ -208,7 +219,7 @@ class PostViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorOrReadOnly, ]
     # добавили ограничения на публикации и доступ к ним в обеденное время,
     # ограничения на проект user=100/minute, anon=10/minute
-    throttle_classes = [LunchBreakThrottle, ]
+    #throttle_classes = [LunchBreakThrottle, ]
     pagination_class = CustomPagination
     # добавим возможность поиска по тексту по регулярным выражениям
     filter_backends = [filters.SearchFilter, ]
@@ -299,10 +310,52 @@ class CommentViewSet(viewsets.ModelViewSet):
         this_post = get_object_or_404(Post, id=self.kwargs.get('post_id'))
         serializer.save(author=self.request.user, post=this_post)
 
-    # нужно получатьне все подряд комментарии, а только относящиеся
+    # нужно получать не все подряд комментарии, а только относящиеся
     # к посту с переданным id, переопределим метод get_quiryset
     def get_queryset(self):
         # получим пост по id=post_id
         this_post = get_object_or_404(Post, id=self.kwargs.get('post_id'))
         # получим список всех комментариев к этому посту
         return this_post.comments.all()
+
+
+class FollowViewSet(BaseGetPostViewSet):
+    """
+    ViewSet будет:
+    o	возвращает все подписки пользователя, сделавшего запрос;
+    o	подписывать пользователя, сделавшего запрос на пользователя,
+    переданного в теле запроса.
+    """
+
+    serializer_class = FollowSerializer
+    # нужно получать не все записи модели Follow, а только
+    # относящиеся к id юзера, который делает запрос, показать тех,
+    # на кого он подписан
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Follow.objects.filter(user=user)
+        return queryset
+
+    # добавляем возможность поиска по параметру /?search= по полю author
+    filter_backends = [filters.SearchFilter, ]
+    # искать будем по полю author, которое обращается к модели User к её
+    # полю username, т е поиск по полю связанной модели
+    # Эту запись читать так: в модели Follow осуществлять поиск по полю author,
+    # которое берёт свое значение из модели User поля username
+    search_fields = ['author__username', ]
+
+    # переопределим perform_create так, чтобы при попытки пользователя
+    # сделавшего запрос подписаться на самого себя, пользователь должен
+    # получить информативное сообщение об ошибке
+    # поле user может быть использовано на выходе сериализатора
+    # (установили дефолтное значение), но без передачи его значения в метод save(),
+    # из-за неявного ограничения UniqueTogetherValidator
+    # во вьюсете тут уже не обойтись
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(user=user)
+
+    # Анонимный пользователь на запросы к этому эндпоинту должен получать
+    # ответ с кодом 401 Unauthorized, воспользуемся разрешениями permissions
+    # rest_framework.permissions import IsAuthenticated
+    permission_classes = [IsAuthenticated, ]

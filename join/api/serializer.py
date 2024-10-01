@@ -1,6 +1,9 @@
 
-from posts.models import Comment, Post, Group, Tag, TagPost
+from posts.models import Comment, Follow, Post, Group, Tag, TagPost, User
 from rest_framework import serializers
+
+from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.exceptions import ValidationError
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -43,6 +46,8 @@ class PostSerializer(serializers.ModelSerializer):
     publication_date = serializers.DateTimeField(
         source='pub_date', read_only=True
         )
+
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         model = Post  # работает с моделью Post
@@ -138,3 +143,63 @@ class CommentSerializer(serializers.ModelSerializer):
             'post', 'author', 'text', 'created',
         ]
         read_only_fields = ['post', ]
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Follow."""
+
+
+    # Для определения пользователя есть встроенный класс CurrentUserDefault
+    user = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault(),
+        )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        # Набор запросов, используемый для поиска экземпляра модели при проверке
+        # ввода поля. Отношения должны либо явно задать queryset, либо установить
+        # read_only=True, но это поле обязательное т к оно испольукется в валидаторе
+        # и назначить его по умолчанию тоже нельзя, значит зададим параметр queryset
+        queryset=User.objects.all(),
+        )
+
+    class Meta:
+        model = Follow
+        fields = [
+            'user', 'author'
+        ]
+        # чтобы не допустить подписку на одного и того же автора дважды
+        # Такую же проверку нужно реализовать и на уровне сериализатора.
+        # UniqueTogetherValidator всегда накладывает неявное ограничение на то,
+        # что все поля, к которым он применяется, всегда рассматриваются
+        # как обязательные. Поля со значениями по умолчанию являются исключением
+        # из этого правила, так как они всегда предоставляют значение, даже
+        # если оно опущено при вводе пользователем.
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=['user', 'author'],
+                message=('You have been already following this author!')
+            )
+        ]
+    # Чтобы выполнить проверку, требующую доступа к нескольким полям,
+    # добавьте в сериализатор метод validate(). Этот метод принимает
+    # один аргумент — словарь со значениями полей.
+    # !!!НЕ РАБОТАЕТ!!!
+    # def validate(self, data):
+    #     data = self.data.is_valid()
+    #     # если значение поля user совпадает со значением поля author
+    #     if data['user'] == data['author']:
+    #         # вызвать ошибку валидации и отправить сообщение
+    #         raise ValidationError('You can`t follow yourself!')
+    #     # если все хорошо - передать словать с данными для внесения записи в БД
+    #     return data
+
+    # к юзеру просто так не обратиться тк дефольное значение
+    def validate(self, data):
+        if self.context['request'].user != data.get('author'):
+            return data
+        raise serializers.ValidationError(
+            'Нельзя подписаться на себя'
+        )
