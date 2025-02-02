@@ -1,77 +1,52 @@
 <header>
-    <!-- Использованы классы бустрапа для создания типовой навигации с логотипом -->
-    <!-- В дальнейшем тут будет создано полноценное меню -->
-    <nav class="navbar navbar-light" style="background-color: lightskyblue">
+    <nav class="navbar navbar-expand-lg navbar-dark">
       <div class="container">
-         <!-- ссылка должна вести на главную страницу -->
-        <a class="navbar-brand" href="{% url "posts:index" %}">
-          <!-- posts - пространство имён namespace -->
-          <!-- index - name из path() -->
+        <a class="navbar-brand" href="{% url 'posts:index' %}">
           <img src="img/logo.png" width="30" height="30" class="d-inline-block align-top" alt="">
-          <!-- тег span используется для добавления нужных стилей отдельным участкам текста -->
-          <span style="color:red">JOIN</span>PROJECT
+          <span class="fw-bold">JOIN</span>PROJECT
         </a>
-        {% comment %}
-      Меню - список пунктов со стандартными классами Bootsrap.
-      Класс nav-pills нужен для выделения активных пунктов 
-      {% endcomment %}
-        <ul class="nav nav-pills">
-          {% with request.resolver_match.view_name as view_name %}
-          <li class="nav-item"> 
-            <a class="nav-link {% if view_name == 'about:author' %}active{% endif %}"
-              href="{% url 'about:author' %}">
-                Об авторе
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if view_name == 'about:tech' %}active{% endif %}" 
-              href="{% url 'about:tech' %}">Технологии</a>
-          </li>
-          <!-- Проверка: авторизован ли пользователь? -->
-          {% if user.is_authenticated %}
-          <li class="nav-item"> 
-            <a class="nav-link {% if view_name == 'posts:post_create' %}active{% endif %}" 
-              href="{% url 'posts:post_create' %}">Новая запись</a>
-          </li>
-          <li class="nav-item"> 
-            <a class="nav-link link-light 
-              {% if view_name == 'users:password_change_form' %}active{% endif %}" 
-              href="{% url 'users:password_change_form' %}">Изменить пароль</a>
-          </li>
-          <li class="nav-item"> 
-            <!--<a class="nav-link link-light 
-              {% if view_name == 'users:logout' %}active{% endif %}" 
-              href="{% url 'users:logout' %}">Выйти</a>
-            такой код не работает, ошибка 405-->
-              <form action="{% url 'users:logout' %}" method="post">
-                {% csrf_token %}
-                 <button type="submit" class="btn btn-$blue-100 link-light">Выйти</button>
-             </form>
-          </li>
-          <li>
-            Здравствуйте, {{ user.username }}
-          <li>
-          {% else %}
-          <li class="nav-item"> 
-            <a class="nav-link link-light 
-              {% if view_name == 'users:login' %}active{% endif %}" 
-              href="{% url 'users:login' %}">Войти</a>
-          </li>
-          <li class="nav-item"> 
-            <a class="nav-link link-light 
-              {% if view_name == 'users:signup' %}active{% endif %}" 
-              href="{% url 'users:signup' %}">Регистрация</a>
-          </li>
-          {% endif %}
-          {% endwith %}
-        </ul>
-      {# Конец добавленого в спринте #}
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            {% with request.resolver_match.view_name as view_name %}
+              <li class="nav-item">
+                <a class="nav-link {% if view_name == 'about:author' %}active{% endif %}" href="{% url 'about:author' %}">Об авторе</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if view_name == 'about:tech' %}active{% endif %}" href="{% url 'about:tech' %}">Технологии</a>
+              </li>
+
+              {% if user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link {% if view_name == 'posts:post_create' %}active{% endif %}" href="{% url 'posts:post_create' %}">Новая запись</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-light {% if view_name == 'users:password_change_form' %}active{% endif %}" href="{% url 'users:password_change_form' %}">Изменить пароль</a>
+                </li>
+                <li class="nav-item">
+                  <form action="{% url 'users:logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Выйти</button>
+                  </form>
+                </li>
+                <li class="nav-item">
+                  <span class="navbar-text">Здравствуйте, {{ user.username }}</span>
+                </li>
+              {% else %}
+                <li class="nav-item">
+                  <a class="nav-link {% if view_name == 'users:login' %}active{% endif %}" href="{% url 'users:login' %}">Войти</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link {% if view_name == 'users:signup' %}active{% endif %}" href="{% url 'users:signup' %}">Регистрация</a>
+                </li>
+              {% endif %}
+            {% endwith %}
+          </ul>
+        </div>
       </div>
-    </nav> 
-    
-    <!--Иконка бургер меню-->
-    <div class="burger">
-      <span></span>
-    </div>
-  </header>
-  
+    </nav>
+</header>

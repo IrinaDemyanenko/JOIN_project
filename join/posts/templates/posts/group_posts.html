@@ -4,6 +4,7 @@
 {% block title %}
   Страница группы {{ group.title }}
 {% endblock %}
+
 {% block main_info %}
 <div class="container">
   <div class="row">
@@ -15,14 +16,12 @@
 <div class="container">
   <div class="row">
     <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-      <p>{{ group.description|linebreaks }}</p> 
+      <p>{{ group.description|linebreaks }}</p>
       {% for post in page_obj %}
         <ul>
             <li class="list-group-item">
                 Автор:
-                <a href="{% url "posts:profile" post.author.username %}">
-                  {{ post.author.username }}
-                </a> 
+                <a href="{% url "posts:profile" post.author.username %}">{{ post.author.username }}</a>
             </li>
             <li class="list-group-item">
                 Дата публикации: {{ post.pub_date|date:'d E Y' }}
@@ -36,16 +35,13 @@
         <p>{{ post.text|linebreaks|truncatewords:30 }}</p>
         <p>
           <a href="{% url "posts:post_detail" post.pk %}">Подробная информация</a>
-          <!-- posts - namespace, post_detail - name from path -->
-          <!-- в этом посте берём значение pk -->
         </p>
         {% if not forloop.last %}<hr>{% endif %}
-    {% endfor %}
+      {% endfor %}
     </div>
   </div>
 </div>
 
-    <!--Добавляем постраничную навигацию-->
     {% include "includes/paginator.html" %}
-    
-{% endblock %}  
+
+{% endblock %}

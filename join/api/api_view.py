@@ -312,6 +312,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     # нужно получать не все подряд комментарии, а только относящиеся
     # к посту с переданным id, переопределим метод get_quiryset
+    # Тк переопределили объект queryset, в маршрутизаторе становится
+    # обязательным параметр basename
     def get_queryset(self):
         # получим пост по id=post_id
         this_post = get_object_or_404(Post, id=self.kwargs.get('post_id'))
@@ -331,6 +333,8 @@ class FollowViewSet(BaseGetPostViewSet):
     # нужно получать не все записи модели Follow, а только
     # относящиеся к id юзера, который делает запрос, показать тех,
     # на кого он подписан
+    # Тк переопределили объект queryset, в маршрутизаторе становится
+    # обязательным параметр basename
     def get_queryset(self):
         user = self.request.user
         queryset = Follow.objects.filter(user=user)

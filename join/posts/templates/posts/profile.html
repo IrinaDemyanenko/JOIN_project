@@ -6,7 +6,7 @@
 {% block main_info %}
 
     <div class="container py-5">
-      <div class="mb-5">        
+      <div class="mb-5">
         <h1>Все посты пользователя {{ author.username }} </h1>
         <h3>Имя пользователя: {{ author.get_full_name }} </h3>
         <h3>Всего постов: {{ posts_author.count }} </h3>
@@ -32,14 +32,14 @@
         {% endif %}
       </div>
 
-      {% for post in page_obj %}   
+      {% for post in page_obj %}
         <article>
           <ul>
             <li>
               Автор: {{ author.username }}
             </li>
             <li>
-              Дата публикации: {{ post.pub_date|date:'d E Y' }} 
+              Дата публикации: {{ post.pub_date|date:'d E Y' }}
             </li>
           </ul>
           <h4>
@@ -59,7 +59,7 @@
           <ul>
             {% if post.group %}  <!--если у поста есть группа -->
               <li>
-                <a href="{% url "posts:group_list" post.group.slug %}">{{ post.group }}</a>        
+                <a href="{% url "posts:group_list" post.group.slug %}">{{ post.group }}</a>
                 <!-- в этом посте берём значение группы в человекочитаемой форме -->
               </li>
             {% endif %}
@@ -73,12 +73,12 @@
           {% if not forloop.last %}<hr>{% endif %}
           <!--если это не последняя итерация, ставим горизонтальную черту-->
         </article>
-      {% endfor %}       
-      
+      {% endfor %}
+
       <hr>
       <!-- Остальные посты. после последнего нет черты -->
       <!-- Здесь подключён паджинатор -->
-      {% include "includes/paginator.html" %}  
+      {% include "includes/paginator.html" %}
     </div>
 
 {% endblock %}

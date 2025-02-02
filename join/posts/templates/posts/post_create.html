@@ -6,15 +6,13 @@
 {% endblock %}
 
 {% block main_info %}
-
 <div class="container py-5">
     <div class="row justify-content-center">
       <div class="col-md-8 p-5">
         <div class="card">
-          <div class="card-header">       
+          <div class="card-header">
             {% if is_edit %} Редактировать пост {% else %} Создать новый пост {% endif %}
           </div>
-          <!--Проверка на ошибки-->
           {% if form.errors %}
             {% for field in form %}
               {% for error in field.errors %}
@@ -24,28 +22,22 @@
               {% endfor %}
             {% endfor %}
           {% endif %}
-          <div class="card-body">        
-            <form method="post" action={% if post %}
-              "{% url 'posts:post_edit' post_id=post.id %}"{% else %}
-              "{% url 'posts:post_create' %}"{% endif %} enctype="multipart/form-data">
-              <!--Если пост существует, значит вызывается путь "редактировать пост",
-              если же нет, то путь "создать пост";
-              post_id=post.id значит, что редактируется именно выбранный пост из БД
-              enctype="multipart/form-data" значит, что форма будет передавать файлы-->
-            {% csrf_token %}
-              {% for field in form %}    
+          <div class="card-body">
+            <form method="post" action="{% if post %}{% url 'posts:post_edit' post.id %}{% else %}{% url 'posts:post_create' %}{% endif %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              {% for field in form %}
               <div class="form-group row my-3 p-3">
                 <label for="{{ field.id_for_label }}">
                   {{ field.label }}
-                  {% if field.field.required %} <!--если вложенное поле в поле требует-->                  
-                  <span class="required text-danger">*</span>
-                  {% endif %}                  
+                  {% if field.field.required %}
+                    <span class="required text-danger">*</span>
+                  {% endif %}
                 </label>
                 {{ field }}
-                {% if field.help_text %} <!--если у поля есть пояснительный маленький текст снизу-->           
-                <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
-                  {{ field.help_text|safe }}
-                </small>
+                {% if field.help_text %}
+                  <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
+                    {{ field.help_text|safe }}
+                  </small>
                 {% endif %}
               </div>
               {% endfor %}
@@ -59,6 +51,5 @@
         </div>
       </div>
     </div>
-  </div>
-
+</div>
 {% endblock %}

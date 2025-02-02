@@ -1,67 +1,49 @@
 {% extends "base.html" %}
 {% load thumbnail %}
+{% load user_filters %}
+
 {% block title %}Пост {{ post.text|truncatechars:30 }}{% endblock %}
+
 {% block main_info %}
 <div class="row">
   <aside class="col-12 col-md-3">
     <ul class="list-group list-group-flush">
+      <li class="list-group-item">Дата публикации: {{ post.pub_date|date:'d E Y' }}</li>
+      {% if post.group %}
       <li class="list-group-item">
-        Дата публикации: {{ post.pub_date|date:'d E Y' }} 
+        Группа:
+        <a href="{% url 'posts:group_list' post.group.slug %}">{{ post.group.title }}</a>
       </li>
-      <!-- если у поста есть группа --> 
-      {% if post.group %}  
-        <li class="list-group-item">
-          Группа:<!-- Название группы -->
-          <a href="{% url "posts:group_list" post.group.slug %}">
-            <!-- в этом посте берём значение группы в человекочитаемой форме -->
-            {{ post.group.title }}
-          </a>
-        </li>
       {% endif %}
       <li class="list-group-item">
         Автор:
-        <a href="{% url "posts:profile" post.author.username %}">
-          {{ post.author.username }}
-        </a>
+        <a href="{% url 'posts:profile' post.author.username %}">{{ post.author.username }}</a>
       </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        Всего постов автора:  <span >{{ posts_count }}</span>
+        Всего постов автора: <span>{{ posts_count }}</span>
       </li>
     </ul>
   </aside>
   <article class="col-12 col-md-9">
     <div>
-      <h4>
-        {{ post.anons }}
-      </h4>
+      <h4>{{ post.anons }}</h4>
       {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-      <!-- У объекта модели post обращаемся к полю image, задаём размер
-      изображения "960x339", расположение по центру, высшее качество=да-->
-        <img class=="card-img my-2" src="{{ im.url }}">
-      <!--Если в посте нет картинки, то содержимое тега thumbnail
-        будет проигнорировано; проверку {% if post.image %}...{% endif %} делать не надо.-->
+        <img class="card-img my-2" src="{{ im.url }}">
       {% endthumbnail %}
-      <p>
-        {{ post.text|linebreaksbr }}
-      </p>
+      <p>{{ post.text|linebreaksbr }}</p>
       {% if user == post.author %}
-        <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">
-          Редактировать запись
-        </a>
+        <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">Редактировать запись</a>
       {% endif %}
     </div>
   </article>
-</div> 
-
-<!--Форма создания комментария-->
-{% load user_filters %}
+</div>
 
 {% if user.is_authenticated %}
   <div class="card my-4">
     <h5 class="card-header">Добавить комментарий:</h5>
     <div class="card-body">
       <form method="post" action="{% url 'posts:add_comment' post.id %}">
-        {% csrf_token %}      
+        {% csrf_token %}
         <div class="form-group mb-2">
           {{ comment_form.text|addclass:"form-control" }}
         </div>
@@ -75,15 +57,11 @@
   <div class="media mb-4">
     <div class="media-body">
       <h5 class="mt-0">
-        <a href="{% url 'posts:profile' username=comment.author.username %}">
-          {{ comment.author.username }}
-        </a>
+        <a href="{% url 'posts:profile' username=comment.author.username %}">{{ comment.author.username }}</a>
       </h5>
-        <p>
-         {{ comment.text }}
-        </p>
-      </div>
+      <p>{{ comment.text }}</p>
     </div>
-{% endfor %} 
+  </div>
+{% endfor %}
 
-{% endblock %} 
+{% endblock %}

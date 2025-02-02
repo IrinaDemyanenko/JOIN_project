@@ -29,7 +29,7 @@ urlpatterns = [
     path('login/',
          LoginView.as_view(template_name='users/login.html'), name='login'),
     path(
-        'password_reset/done',
+        'password_reset/done/',
         PasswordResetDoneView.as_view(template_name='users/password_reset_done.html'),
         name='password_reset_done'
     ),

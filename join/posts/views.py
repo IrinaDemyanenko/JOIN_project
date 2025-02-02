@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
 from django.http import HttpResponse
 from django.template import loader
+from django.db.models import Q
 
 from .models import Post, Group, User, Comment, Follow
 import datetime
@@ -19,6 +20,7 @@ from rest_framework.response import Response
 @cache_page(20)
 # добавила кеширование в шаблон, только список постов, не всю страницу
 def index(request):
+    """Главная страница сайта."""
     # поиск на главной странице
     keyword = request.GET.get('q', None)
     if keyword:  # если слово существует, True
@@ -303,3 +305,11 @@ def profile_unfollow(request, username):
         )
         follower.delete()
     return redirect('posts:profile', username=username)
+
+
+def search_view(request):
+    keyword = request.GET.get('q', '')  # Получаем значение поискового запроса
+    posts = Post.objects.filter(
+        Q(title__icontains=keyword) | Q(text__icontains=keyword)
+    )  # Поиск по заголовку и тексту
+    return render(request, 'posts/search_results.html', {'posts': posts, 'keyword': keyword})

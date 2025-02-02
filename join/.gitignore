@@ -165,3 +165,17 @@ cython_debug/
 media/
 
 .config
+
+# копии старых шаблонов
+base copy.html
+footer copy.html
+header copy.html
+paginator copy.html
+switcher copy.html
+all_groups copy.html
+follow copy.html
+group_posts copy.html
+index copy.html
+post_create copy.html
+post_detail copy.html
+profile copy.html

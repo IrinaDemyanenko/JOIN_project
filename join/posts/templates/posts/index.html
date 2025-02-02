@@ -5,25 +5,25 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block main_info %}
-
   <div class="container py-2">
     <h3>{{ title }}</h3>
   </div>
   <div class="container">
     <h1>Поиск по записям</h1>
-      
+
     <div class="card">
       <div class="card-body">
-        <form class="form-inline" action="/">
+        <form class="form-inline" action="/search/">
           <div class="form-row">
-            <input name="q" class="form-control form-control-lg" type="search" 
+            <input name="q" class="form-control form-control-lg" type="search"
             placeholder="Поиск" {% if keyword %} value="{{ keyword }}"{% endif %}>
             <button class="btn" type="submit">Найти</button>
           </div>
         </form>
       </div>
     </div>
-<!--Здесь отображение результатов поиска на сайте-->
+  </div>
+
   <div class="container">
     {% for post in posts %}
     <strong>
@@ -34,56 +34,41 @@
     <h4>{{ post.title }}</h4>
     <h5><i>{{ post.anons }}</i></h5>
     <p>{{ post.text|linebreaks }}</p>
-    {% endfor %}   
-<!--Здесь конец отображения результатов поиска на сайте-->
+    {% endfor %}
 
-<!--Виджет переключения лент -->
-{% include "includes/switcher.html" %}
+  </div>
 
-<div class="container py-5">
-<!--Здесь будет код паджинатора с добавлением ленты новостей
-по 10 на страницу -->
-  {% for post in page_obj %}
+  {% include "includes/switcher.html" %}
+
+  <div class="container py-5">
+    {% for post in page_obj %}
     <ul>
       <li class="list-group-item">
-        Автор:<a href="{% url 'posts:profile' post.author.username %}">
-          {{ post.author.username }}
-        </a>
+        Автор:<a href="{% url 'posts:profile' post.author.username %}">{{ post.author.username }}</a>
       </li>
       <li class="list-group-item">
         Дата публикации: {{ post.pub_date|date:"d E Y" }}
       </li>
       {% if post.group %}
-      <li class="list-group-item"> Все записи группы: 
-        <a href="{% url 'posts:group_list' post.group.slug %}">
-          {{ post.group.title }}
-        </a>
-        <!--posts это пространство имён, прописанное в join/urls.py
-        а group_list это name из path -->
-        <!--из модели post берём поле group, а из поля group берём slug-->
-    <h4><b>{{ post.title }}</b></h4>
-    {% if post.anons %}
-      <i>{{ post.anons }}</i>
-    {% endif %}
-    {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-      <img class="card-img my-2" src="{{ im.url }}">
-    {% endthumbnail %}
-    <p>{{ post.text|truncatewords:30 }}</p>
-    <a href="{% url 'posts:post_detail' post_id=post.id %}">
-      подробная информация
-    </a>
-    {% endif %}
+      <li class="list-group-item"> Все записи группы:
+        <a href="{% url 'posts:group_list' post.group.slug %}">{{ post.group.title }}</a>
+      </li>
+      <h4><b>{{ post.title }}</b></h4>
+      {% if post.anons %}
+        <i>{{ post.anons }}</i>
+      {% endif %}
+      {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+        <img class="card-img my-2" src="{{ im.url }}">
+      {% endthumbnail %}
+      <p>{{ post.text|truncatewords:30 }}</p>
+      <a href="{% url 'posts:post_detail' post_id=post.id %}">подробная информация</a>
+      {% endif %}
     </ul>
     {% if not forloop.last %}
-        <hr>  <!--горизонтальная линия horizontal rule-->
+        <hr>
     {% endif %}
-{% endfor %} <!--двойные фигурные скобки, обращение к словарю из
-                    view функции -->
-
-</div> 
+    {% endfor %}
+  </div>
 
   {% include "includes/paginator.html" %}
-  <!--добавляем созданный нами код навигации по страницам --> 
-  <!--представляем, что уже находимся внутри папки templates внутри приложения-->
-
-{% endblock %}  
+{% endblock %}
