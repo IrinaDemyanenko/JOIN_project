@@ -1,0 +1,50 @@
+# имена и описания контейнеров, которые должны быть развёрнуты
+services:
+  db:
+    image: postgres:15.0-alpine  # образ, из которого должен быть запущен контейнер
+    env_file:
+      # автоматическое создание БД, используя переменные окружения
+      - ./.env  # адрес файла, где хранятся переменные окружения
+    volumes:
+      - pg_data:/var/lib/postgresql/data/  # volume и связанная с ним директория в контейнере
+
+
+  web:
+    build: .
+    restart: always
+    volumes:
+      # Контейнер web будет работать с данными, хранящиеся в томе static_value,
+      # через свою директорию /app/staticfiles/
+      - static_value:/app/staticfiles/
+      # Данные, хранящиеся в томе media_value, будут доступны в контейнере web
+      # через директорию /app/mediafiles/
+      - media_value:/app/mediafiles/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  nginx:
+    image: nginx:1.26.3-alpine
+    ports:
+      # Это значит, что все запросы на порт 80 вашего сервера
+      # будут передаваться в контейнер Nginx на порт 80
+      - "80:80"
+    volumes:
+      # копируем конфигурационный файл с хост-машины в контейнер
+      # чтобы настроить Nginx и использовать кастомные конфиги вместо стандартных
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # static_value (том) будет доступен внутри контейнера Nginx в /var/html/staticfiles/
+      - static_value:/var/html/staticfiles/
+      # media_value (ещё один том) будет доступен в /var/html/mediafiles/
+      - media_value:/var/html/mediafiles/
+
+    depends_on:
+      # что контейнер nginx должен запуститься только после запуска контейнера web.
+      - web
+
+
+volumes:
+  pg_data:
+  static_value:
+  media_value:

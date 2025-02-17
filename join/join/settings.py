@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+#from dotenv import load_dotenv
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -33,7 +36,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '[::1]',
     'Aniri.pythonanywhere.com',
-    'www.Aniri.pythonanywhere.com'
+    'www.Aniri.pythonanywhere.com',
+    'web'
 ]
 
 INTERNAL_IPS = [
@@ -108,8 +112,15 @@ WSGI_APPLICATION = 'join.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT')
+
     }
 }
 
@@ -148,13 +159,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    "/var/www/static/",  #этот параметр пока не нужен при выгрузке на сервер,
-    # если папка static будет находиться на это сервере
-]
+#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')  # папка, в которой будет лежать статика
+STATIC_ROOT = BASE_DIR / 'staticfiles' # Удобный способ конкатенации путей
+
+STATICFILES_DIRS = []
 
 
 # Default primary key field type
@@ -186,11 +196,18 @@ EMAIL_FILE_PATH = 'sent_emails'
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1",
+    "http://localhost",
+    "http://web",  # имя контейнера, где у меня проект
+    "http://your-domain.com"  # если есть домен
+]
+
 # это URL, по которому пользователи могут получить доступ к медиафайлам.
 MEDIA_URL = '/media/'
 # Абсолютный путь к директории, из которой ваше приложение Django
 # будет загружать медиафайлы.
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
 CACHES = {
     'default': {
