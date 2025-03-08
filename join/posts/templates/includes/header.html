@@ -1,8 +1,9 @@
 <header>
+  {% load static %}
     <nav class="navbar navbar-expand-lg navbar-dark">
       <div class="container">
         <a class="navbar-brand" href="{% url 'posts:index' %}">
-          <img src="img/logo.webp" width="30" height="30" class="d-inline-block align-top" alt="">
+          <img src="{% static 'img/logo-crop.jpg' %}" width="30" height="30" class="d-inline-block align-top" alt="">
           <span class="fw-bold">JOIN</span>PROJECT
         </a>
 

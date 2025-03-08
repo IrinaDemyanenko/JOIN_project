@@ -25,19 +25,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6$#9h9#42h$w)@9paq0$rsw^nuxr6rv&qt=ezwzt4hm6!+(u*m'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'testserver',
     '127.0.0.1',
     'localhost',
     '[::1]',
-    'Aniri.pythonanywhere.com',
-    'www.Aniri.pythonanywhere.com',
-    'web'
+    'web',
+    'join.hopto.org',
+    '*'  # *, если хост может меняться
 ]
 
 INTERNAL_IPS = [
@@ -200,7 +200,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1",
     "http://localhost",
     "http://web",  # имя контейнера, где у меня проект
-    "http://your-domain.com"  # если есть домен
+    "https://join.hopto.org/"  # если есть домен
 ]
 
 # это URL, по которому пользователи могут получить доступ к медиафайлам.
