@@ -10,7 +10,13 @@ WORKDIR /app
 
 # Копируем файл зависимостей и устанавливаем их
 COPY requirements.txt /app/
-RUN pip install --upgrade pip && pip install -r requirements.txt --no-cache-dir
+RUN python3 -m venv /venv && \
+    /venv/bin/pip install --upgrade pip && \
+    /venv/bin/pip install --no-cache-dir -r requirements.txt
+
+
+# Добавляем путь к venv, чтобы `python` и `pip` работали внутри контейнера
+ENV PATH="/venv/bin:$PATH"
 
 # Копируем весь проект в контейнер
 #COPY . /app/
